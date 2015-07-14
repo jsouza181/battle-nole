@@ -6,6 +6,8 @@ import java.util.Map;
 
 /**
  * Created by Eric on 07/13/2015.
+ *
+ * Test object to test the SerializationUtils class
  */
 public class Ball implements Serializable {
 
@@ -28,11 +30,6 @@ public class Ball implements Serializable {
     }
 
     public String getColorMap() {
-        /*String allColorsString = new String(); // string to append all colors
-
-        for (Map.Entry<Integer,String> m : colorMap.entrySet())
-            allColorsString = Integer.toString(m.getKey()) + "  \n";
-*/
         return colorMap.toString();
     }
 
