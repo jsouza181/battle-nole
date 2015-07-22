@@ -3,7 +3,7 @@ package com.electricsheep.battlenole;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+
 
 /*
  * BattleNole is the main/launcher activity for Battle 'Nole.

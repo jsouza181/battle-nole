@@ -4,11 +4,15 @@ package com.electricsheep.battlenole;
 import android.content.Context;
 import android.widget.ImageView;
 
+/*
+ * The tile is the class that represents a single unit of the GridView. It can be occupied by a Ship
+ * object and has functions to access the ship that occupies it.
+ */
 public class Tile extends ImageView{
 
     private boolean occupied = false;
     private Ship occupyingShip;
-    private int index;
+    private int index; //The tile's position in the grid that contains it
 
     public Tile(Context c){
         super(c);
@@ -32,8 +36,5 @@ public class Tile extends ImageView{
 
     public void setIndex(int i) { index = i; }
 
-    public void changeOrientation() {
-        occupyingShip.changeOrientation();
-    }
 
 }

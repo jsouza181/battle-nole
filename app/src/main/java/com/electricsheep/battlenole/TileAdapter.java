@@ -8,7 +8,8 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 /**
- * TileAdapter is a custom adapter used with the battle grid's GridView
+ * TileAdapter is a custom adapter used with the PlacementGrid's GridView. It is functionally
+ * similar to a ListAdapter but it is also responsible for setting the ships in their initial positions
  */
 public class TileAdapter extends BaseAdapter {
     private Context context;
@@ -36,7 +37,9 @@ public class TileAdapter extends BaseAdapter {
 
             if(convertView == null){
                 tiles[position] = new Tile(context);
-                tiles[position].setLayoutParams(new GridView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                tiles[position].setLayoutParams
+                        (new GridView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.WRAP_CONTENT));
             } else {
                 tiles[position] = (Tile)convertView;
             }
