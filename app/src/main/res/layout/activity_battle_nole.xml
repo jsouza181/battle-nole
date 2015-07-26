@@ -21,7 +21,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_width="match_parent"
-        android:text="@string/new_game"/>
+        android:text="@string/new_game"
+        android:onClick="startNewGame"/>
 
     <Button android:id="@+id/button_settings"
         android:layout_height="0dp"

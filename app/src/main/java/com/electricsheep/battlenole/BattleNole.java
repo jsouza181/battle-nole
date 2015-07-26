@@ -3,6 +3,7 @@ package com.electricsheep.battlenole;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 
 /*
@@ -22,11 +23,14 @@ public class BattleNole extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_battle_nole);
-
-        Intent placeShipsIntent = new Intent(this, ShipPlacement.class);
-        startActivity(placeShipsIntent);
-
     }
 
+    /*
+    * onClick method for new game button.
+    * */
+    public void startNewGame(View newGameButton){
+        Intent placeShipsIntent = new Intent(this, ShipPlacement.class);
+        startActivity(placeShipsIntent);
+    }
 }
 
