@@ -1,12 +1,15 @@
 package com.electricsheep.battlenole;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.Toast;
 
 /**
  * PlacementGrid is a fragment that represents the 10x10 grid in which the players' ships are
@@ -58,100 +61,145 @@ public class PlacementGrid extends Fragment {
                     //Preserve the ship itself to be used later.
                     Ship shipToAdd = bufferedTile.getOccupyingShip();
                     //Remove the ship from every tile the ship was previously on.
-                    removeShip(parent, bufferedTile, shipToAdd);
+                    int maxVerticalRange = ((Tile) selectedTile).getIndex() +
+                            ((shipToAdd.getSegmentCount()-1)*10);
+                    int maxHorizontalRange = ((Tile) selectedTile).getIndex() +
+                            (shipToAdd.getSegmentCount()-1);
+                    Log.i("CheckNewIndex",Integer.toString(maxHorizontalRange));
+                    if ((maxVerticalRange < 100 && shipToAdd.isVertical()) ||
+                            (!shipToAdd.isVertical() && maxHorizontalRange < 100)){
+
+                        removeShip(parent, bufferedTile, shipToAdd);
 
                     /* Can't figure out why, but for some reason the 0th tile isn't cleared
                      * properly...
                      */
-
-                    //Add the ship to the selected tile.
-                    placeShip(parent, (Tile) selectedTile, shipToAdd, false);
+                        //Add the ship to the selected tile.
+                        placeShip(parent, (Tile) selectedTile, shipToAdd, false);
+                    }
+                    else
+                    {
+                        Toast.makeText(getActivity(),"Invalid Location. Reselect ship and choose " +
+                                "another location",Toast.LENGTH_SHORT).show();
+                    }
+                        Log.i("Keep board","Don't change board");
 
                     bufferedTile = null;
-
                 }
             }
         });
-
         return view;
     }
 
-    /*
-     * removeShip locates the "head node" of the ship we want to remove from its former set of
-     * tiles. Then it removes the head and each subsequent vertical/horizontal tile containing
-     * the ship (clears the data of each tile and sets the image to default "water").
-     */
-    private void removeShip(AdapterView<?> parent, Tile tileToRemove, Ship shipToRemove) {
+    //Clearing 0th:
+    private void placeShip(AdapterView<?> parent, Tile tile1, Ship ship, boolean selected) {
+        Tile tile = tile1;
+        //Ship is vertical
+        if(ship.isVertical()) {
+            if (tile.getIndex()==0){
+                if(selected){
+                    tile.setImageResource(ship.getImageSegmentSelected(0));
+                }
+                else {
+                    tile.setImageResource(ship.getImageSegment(0));
+                }
+                tile.setOccupied(true);
+                tile.setOccupyingShip(ship);
+            }
+            for(int i = 0; i <ship.getSegmentCount(); i++) {
 
+                Log.i("Index check", Integer.toString(tile.getIndex() + (i * 10)));
+
+                if (tile.getIndex() + ((ship.getSegmentCount() - 1) * 10) < 100) {
+                    Tile tileToOccupy = (Tile) parent.getAdapter().getItem(tile.getIndex() + i * 10);
+
+                    if (selected) {
+                        tileToOccupy.setImageResource(ship.getImageSegmentSelected(i));
+                    } else {
+                        tileToOccupy.setImageResource(ship.getImageSegment(i));
+                    }
+                    tileToOccupy.setOccupied(true);
+                    tileToOccupy.setOccupyingShip(ship);
+                }
+                else
+                {
+                    Log.i("Out of Bound error","Incorrect Position");
+                }
+            }
+        }
+        //Ship is horizontal
+        else {
+            if((tile.getIndex() + ship.getSegmentCount()-1) < 100) {
+                for (int i = 0; i < ship.getSegmentCount(); i++) {
+                    Tile tileToOccupy = ((Tile) parent.getAdapter().getItem(tile.getIndex() + i));
+                    if (selected) {
+                        tileToOccupy.setImageResource
+                                (ship.getImageSegmentSelected(ship.getSegmentCount() - i - 1));
+                    } else {
+                        tileToOccupy.setImageResource(ship.getImageSegment(ship.getSegmentCount() - i - 1));
+                    }
+                    tileToOccupy.setOccupied(true);
+                    tileToOccupy.setOccupyingShip(ship);
+                }
+            }
+            else
+                Log.i("Out of bound check",Integer.toString(tile.getIndex() + 4));
+        }
+    }
+    private void removeShip(AdapterView<?> parent, Tile tileToRemove, Ship shipToRemove) {
+        final Context context = (Context) getActivity();
         //Possibly redundant? Can't remember why this is here, will test later.
+        // Initializes tileToClear -
         Tile tileToClear = ((Tile)parent.getAdapter().getItem
                 (tileToRemove.getIndex()));
 
         //To remove the ship, we need to find its head node first
         tileToClear = getHeadNode(parent, tileToClear, shipToRemove);
         int headIndex = tileToClear.getIndex();
+        //String test2 = String.valueOf(headIndex);
+        //Toast.makeText(context,test2, Toast.LENGTH_SHORT).show();
+   /*
+    * Now that we have the node, iterate through each tile of the ship using a for loop
+    * and iterate until we reach the number of tiles(segments) the ship takes up.
+    */
 
-        /*
-         * Now that we have the node, iterate through each tile of the ship using a for loop
-         * and iterate until we reach the number of tiles(segments) the ship takes up.
-         */
 
-        //Ship is vertical
-        if(tileToClear.getOccupyingShip().isVertical()) {
-            for (int i = 1; i <= shipToRemove.getSegmentCount() ; i++) {
-                tileToClear.setOccupied(false);
-                tileToClear.setOccupyingShip(null);
-                tileToClear.setImageResource(R.mipmap.water);
-                tileToClear = ((Tile)parent.getAdapter().getItem
-                        (headIndex + (i * 10)));
-            }
-        }
-        //Ship is horizontal
-        else {
-            for (int i = 1; i <= 5 ; i++) { //shipToAdd.getSegmentCount(); i++) {
-                tileToClear.setOccupied(false);
-                tileToClear.setOccupyingShip(null);
-                tileToClear.setImageResource(R.mipmap.water);
-                tileToClear = ((Tile)parent.getAdapter().getItem
-                        (headIndex + i));
-            }
-        }
-    }
+            //Ship is vertical
+            if (tileToClear.getOccupyingShip().isVertical()) {
+                if(headIndex + (shipToRemove.getSegmentCount()-1 * 10) < 100) {
+                    for (int i = 0; i < shipToRemove.getSegmentCount(); i++) {
+                        if (i == 0 && tileToClear != tileToRemove)
+                            tileToRemove.setImageResource(R.mipmap.water);
 
-    /*
-     * placeShip pretty much works just like removeShip, only with additional consideration for
-     * whether the ship is currently selected(highlighted).
-     */
-    private void placeShip(AdapterView<?> parent, Tile tile, Ship ship, boolean selected) {
-        //Ship is vertical
-        if(ship.isVertical()) {
-            for(int i = 0; i < ship.getSegmentCount(); i++) {
-                Tile tileToOccupy = ((Tile)parent.getAdapter().getItem(tile.getIndex() + (i * 10)));
-                if(selected) {
-                    tileToOccupy.setImageResource(ship.getImageSegmentSelected(i));
+                        tileToClear.setOccupied(false);
+                        tileToClear.setOccupyingShip(null);
+                        tileToClear.setImageResource(R.mipmap.water);
+                        //String here = String.valueOf(tileToClear.getIndex());
+                        //Toast.makeText(context,test2+"HERE", Toast.LENGTH_SHORT).show();
+                        {
+                            tileToClear = ((Tile) parent.getAdapter().getItem
+                                    (headIndex + (i * 10)));
+                        }
+
+                    }
                 }
-                else {
-                    tileToOccupy.setImageResource(ship.getImageSegment(i));
-                }
-                tileToOccupy.setOccupied(true);
-                tileToOccupy.setOccupyingShip(ship);
+                else
+                    Log.i("remove vertical check","Not passed");
             }
-        }
-        //Ship is horizontal
-        else {
-            for(int i = 0; i < ship.getSegmentCount(); i++) {
-                Tile tileToOccupy = ((Tile)parent.getAdapter().getItem(tile.getIndex() + i));
-                if(selected) {
-                    tileToOccupy.setImageResource
-                            (ship.getImageSegmentSelected(ship.getSegmentCount() - i - 1));
+            //Ship is horizontal
+            else {
+                if(headIndex + (shipToRemove.getSegmentCount()-1) < 100) {
+                    for (int i = 0; i < shipToRemove.getSegmentCount(); i++) {
+                        tileToClear.setOccupied(false);
+                        tileToClear.setOccupyingShip(null);
+                        tileToClear.setImageResource(R.mipmap.water);
+                        tileToClear = ((Tile) parent.getAdapter().getItem
+                                (headIndex + i));
+                    }
                 }
-                else {
-                    tileToOccupy.setImageResource(ship.getImageSegment(ship.getSegmentCount() - i - 1));
-                }
-                tileToOccupy.setOccupied(true);
-                tileToOccupy.setOccupyingShip(ship);
+                else
+                    Log.i("remove horizontal check","Not passed");
             }
-        }
     }
 
     private Tile getHeadNode(AdapterView<?> parent, Tile headNode, Ship shipToAdd) {
